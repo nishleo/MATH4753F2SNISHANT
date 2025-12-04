@@ -1,0 +1,766 @@
+---
+title: "Assignment-1"
+date: "2025-09-23"
+author: "Nishant Ahlawat"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "~/Statistics-R-Math4753/Lab3")
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+# Install gt only if it's not already available
+if (!requireNamespace("gt", quietly = TRUE)) {
+  install.packages("gt")
+}
+library(gt)
+
+```
+## I completed 15/15 tasks
+# Task 1
+```{r}
+
+grading <- data.frame(
+  Group = c("Labs", "Chapter Quizzes", "Assignments", "Projects",
+            "In class Quizzes", "Midterm exams", "Final exam"),
+  Count = c("16", "9", "4", "2", "TBD", "1", "1"),
+  `Weight (each)` = c("0.625%", "0.56%", "3.75%", "3.33%, 6.67%", "-", "20%", "30%"),
+  `Total Weight`  = c("10%", "5%", "15%", "10%", "10%", "20%", "30%"),
+  check.names = FALSE
+)
+
+grading |>
+  gt() |>
+  tab_header(
+    title = md("**Overall summary of the grading for this course**")
+  ) |>
+  cols_align(align = "left", columns = "Group") |>
+  cols_align(align = "center", columns = c("Count", "Weight (each)", "Total Weight")) |>
+  tab_options(
+    table.font.names = "Courier",         # monospaced vibe
+    data_row.padding = px(6),
+    table.border.top.width = px(1),
+    table.border.bottom.width = px(1)
+  ) |>
+  tab_source_note(md("_And, true to form, the right column sums to 100%!_")) |>
+  tab_source_note(md(
+    "There will be no curves in this course. A final grade in the 90s earns an **A**, \
+a final grade in the 80s earns a **B**, a final grade in the 60s or 70s earns a **C**, \
+a final grade in the 50s earns a **D**, and anything below 50 earns an **F**."
+  ))
+
+```
+
+# Task 2
+## (a)
+```{r}
+ddt <- read.csv("DDT.csv")
+
+# Treat MILE as factor
+m <- with(ddt, as.numeric(factor(MILE)))
+
+# Coplot LENGTH vs WEIGHT given RIVER*SPECIES
+coplot(LENGTH ~ WEIGHT | RIVER * SPECIES,
+       data = ddt,
+       pch = m,                     # different plotting symbols
+       col = m,                     # different colors
+       panel = panel.smooth,        # adds smooth line
+       xlab = "Weight", ylab = "Length")
+
+legend("topright",
+       legend = levels(factor(ddt$MILE)),
+       col = 1:length(unique(m)),
+       pch = 1:length(unique(m)),
+       title = "MILE")
+```
+## (b)
+"The lower left panels correspond to the first RIVER-SPECIES combinations.
+They show positive association between LENGTH and WEIGHT: larger fish weigh more.
+
+## (c) what does line A do?
+m = with(ddt, as.numeric(factor(MILE)))
+"This converts the factor MILE into numeric codes (1, 2, 3, …).
+Each unique MILE gets a number that we can use for plotting symbols (pch) and colors."
+
+## (d) What does line B do?
+length(unique(m))
+"This counts how many unique MILE categories exist.
+It ensures we know how many distinct colors/symbols are needed for plotting."
+
+## (e) Why are the top six plots empty?
+"The coplot is conditioned on RIVER*SPECIES.
+If no fish were caught for some RIVER-SPECIES combinations in the dataset, those panels have no data → they appear empty."
+
+## (f)
+```{r}
+mean_ddt <- mean(ddt$DDT[ddt$RIVER == "FCM" & ddt$SPECIES == "CCATFISH"])
+mean_ddt
+
+
+```
+# Task 3
+
+"All highway bridges in the United States are inspected periodically for structural deficiency by the FHWA. Several variables from the National Bridge Inventory are given below. Classify each as **quantitative** or **qualitative**."
+
+| Variable | Type |
+|---|---|
+| a. Length of maximum span (feet) | Quantitative |
+| b. Number of vehicle lanes | Quantitative |
+| c. Toll bridge (yes or no) | Qualitative |
+| d. Average daily traffic | Quantitative |
+| e. Condition of deck (good, fair, or poor) | Qualitative (ordinal) |
+| f. Bypass or detour length (miles) | Quantitative |
+| g. Route type (interstate, U.S., state, county, or city) | Qualitative (nominal) |
+
+## Notes
+
+- **Quantitative**: numeric and measurable (continuous or discrete).  
+- **Qualitative**: categorical.  
+  - **Ordinal**: categories have a natural order (e.g., good > fair > poor).  
+  - **Nominal**: categories have no inherent order (e.g., route type).
+
+# Task 4- Random Sampling Designs
+
+## (a) The four random sampling designs are:
+
+1. Simple random sampling  
+2. Stratified random sampling  
+3. Cluster sampling  
+4. Systematic sampling  
+
+---
+
+## (b) **Descriptions of each sampling design**
+
+- **Simple random sampling**:  
+  Every experimental unit in the population has an equal chance of being selected. For example, drawing names from a hat or using a random number generator.
+
+- **Stratified random sampling**:  
+  The population is divided into groups (called strata) that are internally homogeneous (similar within each group) but different from one another. A random sample is then taken from each stratum, ensuring representation across all strata.
+
+- **Cluster sampling**:  
+  The population is divided into large groups (clusters) that mirror the overall population. A random sample of entire clusters is selected, and then all experimental units within the chosen clusters are observed.
+
+- **Systematic sampling**:  
+  A starting point is chosen at random, and then every *k*th experimental unit is selected from a list or sequence. For example, surveying every 10th person on a list.
+
+# Task 5
+We have data on 223 New Hampshire wells (`MTBE.csv`). The task is to select a random sample of 5 wells and answer follow-up questions.
+
+---
+
+## Random sample of 5 wells
+
+```{r}
+# Load libraries
+library(knitr)
+# Load data
+mtbe <- read.csv("MTBE.csv", header = TRUE)
+
+# First six rows (preview of dataset)
+kable(head(mtbe), caption = "First six rows of MTBE data")
+
+# Dimensions (rows and columns)
+dim(mtbe)
+
+# Select random indices
+set.seed(123)   # for reproducibility
+ind <- sample(1:223, 5, replace = FALSE)
+
+# Random sample of 5 wells
+sample_wells <- mtbe[ind, ]
+kable(sample_wells, caption = "Random sample of 5 wells")
+
+## (i) Remove rows with missing values
+# Remove rows with NA values
+mtbeo <- na.omit(mtbe)
+
+# Show cleaned dataset dimensions
+dim(mtbeo)
+
+# Show first few cleaned rows
+kable(head(mtbeo), caption = "First rows of MTBE data with NAs removed")
+
+## (ii) Standard deviation of depth for wells with Bedrock aquifer
+# Subset wells where Aquifier == "Bedrock"
+depth <- mtbeo[mtbeo$Aquifier == "Bedrock", ]$Depth
+
+# Compute standard deviation
+sd_depth <- sd(depth, na.rm = TRUE)
+sd_depth
+```
+
+# Task 6
+The U.S. Geological Survey recorded 2,929 aftershocks in the Los Angeles area following a major earthquake. The data (measured on the Richter scale) are in the file `EARTHQUAKE.csv`. We want to:
+
+1. Select a random sample of 30 aftershocks.  
+2. Plot the magnitudes as a time series.  
+3. Compute the median magnitude for the full dataset.  
+
+---
+
+## Random sample of 30 aftershocks
+
+```{r}
+# Load libraries
+library(knitr)
+
+# Load dataset
+eq <- read.csv("EARTHQUAKE.csv", header = TRUE)
+
+# First rows preview
+kable(head(eq), caption = "First six rows of Earthquake data")
+
+# Dataset dimensions
+dim(eq)
+
+# Select a random sample of 30 aftershocks
+set.seed(123)  # reproducibility
+ind <- sample(1:nrow(eq), 30, replace = FALSE)
+sample_eq <- eq[ind, ]
+
+# Show sample in a clean table
+kable(sample_eq, caption = "Random sample of 30 aftershocks")
+```
+
+## (i) Plot magnitudes as a time series
+```{r}
+# Time series plot of magnitudes
+plot(ts(eq$MAG),
+     main = "Time Series of Aftershock Magnitudes",
+     ylab = "Magnitude (Richter scale)",
+     xlab = "Observation Index",
+     col = "blue")
+```
+
+## (ii) Median magnitude of all aftershocks
+
+```{r}
+median_mag <- median(eq$MAG, na.rm = TRUE)
+median_mag
+
+```
+
+# Task 7
+## (a) What is the data collection method?
+
+The data collection method is a **designed experiment**.  
+Engineers collected fish specimens at predetermined river and tributary locations, measuring weight, length, and DDT concentration.
+
+---
+
+## (b) What is the population?
+
+The population is **all fish in the Tennessee River and its tributaries**.  
+The 144 fish captured and measured represent a **sample** from this larger population.
+
+---
+
+## (c) Give the names of all the qualitative variables.
+
+The qualitative variables are:  
+
+- **River** (capture location: TR, FC, LC, SC)  
+- **Mile** (distance upstream, categorical in this study)  
+- **Species** (channel catfish, largemouth bass, smallmouth buffalo)
+
+---
+
+## Notes
+
+- **Qualitative variables** describe categories or labels.  
+- **Quantitative variables** (not asked here, but present) include weight (g), length (cm), and DDT concentration (ppm).
+
+# Task 8
+
+## (a) What type of graph is used to describe the data?
+
+A **bar graph** is used to describe the data.
+
+---
+
+## (b) What is the variable measured?
+
+The variable measured is **type of robotic limbs** for each robot.
+
+---
+
+## (c) Which design is used the most?
+
+The **“Legs only”** design (63 robots) is the most common.
+
+---
+
+## (d) Compute class relative frequencies
+
+```{r}
+# Frequencies of robot limb categories
+freq <- c(15, 8, 63, 20)
+RL <- c("None", "Both", "Legs only", "Wheels only")
+
+# Data frame
+robots <- data.frame(Category = RL, Frequency = freq)
+
+# Total sample size
+n <- sum(freq)
+
+# Relative frequencies
+robots$RelativeFreq <- round(robots$Frequency / n, 4)
+
+robots
+
+knitr::kable(robots, digits = 3, caption = "Frequencies and Relative Frequencies of Robot Designs")
+```
+## (e) Pareto diagram
+```{r}
+library(qcc)
+
+pareto.chart(freq,
+             names = RL,
+             main = "Pareto Diagram of Robotic Limb Categories",
+             ylab = "Number of Robots")
+
+
+```
+# Task 9
+
+Researchers analyzed 50 Microsoft security bulletins from 2012.  
+- Windows: 32  
+- Explorer: 6  
+- Office: 12  
+
+Categories of security repercussions:  
+- Denial of service = 6  
+- Information disclosure = 8  
+- Remote code execution = 22  
+- Spoofing = 3  
+- Privilege elevation = 11  
+
+---
+
+## (a) Pie chart of Microsoft products with security issues
+
+```{r}
+products <- c("Windows", "Explorer", "Office")
+counts <- c(32, 6, 12)
+
+# Pie chart
+pie(counts,
+    labels = products,
+    main = "Microsoft Products with Security Issues (2012)",
+    col = c("skyblue", "orange", "lightgreen"))
+
+```
+
+## (b) Pareto diagram of repercussions
+
+```{r}
+# Categories of repercussions
+issues <- c("Denial of service", "Information disclosure", 
+            "Remote code execution", "Spoofing", "Privilege elevation")
+freq <- c(6, 8, 22, 3, 11)
+
+# If qcc not installed: install.packages("qcc")
+library(qcc)
+
+pareto.chart(freq,
+             names = issues,
+             main = "Pareto Chart of Security Issue Repercussions",
+             ylab = "Number of Bulletins")
+```
+
+# Task 10
+```{r}
+# Load package
+library(plotrix)
+
+# Load data
+swd <- read.csv("SWDEFECTS.csv", header = TRUE)
+
+# Tabulate defects
+tab <- table(swd$defect)
+rtab <- tab / sum(tab)
+
+# Relative frequencies
+round(rtab, 2)
+
+# 3D pie chart
+pie3D(rtab,
+      labels = c("OK", "Defective"),
+      main = "Pie Chart of Software Defects",
+      col = c("lightblue", "red"))
+
+```
+
+# Task 11
+
+## Data
+
+```{r}
+old <- c(9.98, 10.12, 9.84, 10.26, 10.05, 10.15, 10.05, 9.80, 10.02, 
+         10.29, 10.15, 9.80, 10.03, 10.00, 9.73, 8.05, 9.87, 10.01,
+         10.55, 9.55, 9.98, 10.26, 9.95, 8.72, 9.97, 9.70, 8.80, 
+         9.87, 8.72, 9.84)
+
+new <- c(9.19, 10.01, 8.82, 9.63, 8.82, 8.65, 10.10, 9.43, 8.51,
+         9.70, 10.03, 9.14, 10.09, 9.85, 9.75, 9.60, 9.27, 8.78,
+         10.05, 8.83, 9.35, 10.12, 9.39, 9.54, 9.49, 9.48, 9.36,
+         9.37, 9.64, 8.68)
+```
+
+## (a) Relative frequency histogram – Old Location
+```{r}
+# Define bins 8.0–10.6 with 9 classes
+
+bins <- seq(8.0, 10.6, length.out = 10)
+
+old_cut <- cut(old, breaks = bins, right = TRUE, include.lowest = TRUE)
+old_tab <- table(old_cut)
+old_rel <- old_tab / length(old)
+
+barplot(old_rel, space = 0, col = "skyblue",
+        main = "Relative Frequency Histogram – Old Location",
+        ylab = "Relative Frequency", las = 2)
+old_rel
+
+```
+## (b) Stem-and-leaf display
+```{r}
+stem(old)
+```
+## (c) Histogram (using barplot, not hist)
+```{r}
+new_cut <- cut(new, breaks = bins, right = TRUE, include.lowest = TRUE)
+new_tab <- table(new_cut)
+new_rel <- new_tab / length(new)
+
+barplot(new_rel, space = 0, col = "orange",
+        main = "Relative Frequency Histogram – New Location",
+        ylab = "Relative Frequency", las = 2)
+new_rel
+
+```
+## (d) Compare Old vs. New
+
+```{r}
+barplot(rbind(old_rel, new_rel), beside = TRUE,
+        col = c("skyblue", "orange"),
+        legend.text = c("Old", "New"),
+        main = "Comparison of Old vs. New Voltage Readings",
+        ylab = "Relative Frequency", las = 2)
+
+```
+## (d) Compare Old vs. New
+
+```{r}
+barplot(rbind(old_rel, new_rel), beside = TRUE,
+        col = c("skyblue", "orange"),
+        legend.text = c("Old", "New"),
+        main = "Comparison of Old vs. New Voltage Readings",
+        ylab = "Relative Frequency", las = 2)
+
+```
+## (e) Mean, Median, Mode
+
+```{r}
+mean_old <- mean(old); median_old <- median(old)
+mean_new <- mean(new); median_new <- median(new)
+
+# Mode function
+get_mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+list(Old = c(Mean = mean_old, Median = median_old, Mode = get_mode(old)),
+     New = c(Mean = mean_new, Median = median_new, Mode = get_mode(new)))
+
+```
+## (f) Z-score at 10.50 (Old)
+
+```{r}
+z_old <- (10.50 - mean_old) / sd(old)
+z_old
+
+```
+## (g) Z-score at 10.50 (New)
+
+```{r}
+z_new <- (10.50 - mean_new) / sd(new)
+z_new
+
+```
+
+## (h) Where is 10.50 more likely?
+
+Answer: Compare |z| values: whichever is smaller means 10.50 is more typical there. i.e. OLD LOCATION
+
+## (i-l) Boxplots and Outliers
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(old, main = "Boxplot – Old Location", col = "skyblue")
+boxplot(new, main = "Boxplot – New Location", col = "orange")
+par(mfrow=c(1,1))
+
+# Outlier detection using z-scores
+outliers_old <- old[abs((old - mean_old)/sd(old)) > 2]
+outliers_new <- new[abs((new - mean_new)/sd(new)) > 2]
+list(OutliersOld = outliers_old, OutliersNew = outliers_new)
+
+
+```
+
+## (m) Compare Old vs. New
+
+Answer:
+
+Old readings range lower, with some below the 9.2 threshold.
+
+New readings are more tightly clustered and generally higher.
+
+The new process seems better suited for meeting the quality standard.
+
+# Task 12
+
+Data (micrometers) from *Anti-corrosion Methods and Materials* (Vol. 50, 2003).  
+Goal: Give an interval that will **likely contain about 95%** of coated pipe roughness measurements.
+
+```{r}
+rough <- c(
+  1.72, 2.50, 2.16, 2.13, 1.06, 2.24, 2.31, 2.03, 1.09, 1.40,
+  2.57, 2.64, 1.26, 2.05, 1.19, 2.13, 1.27, 1.51, 2.41, 1.95
+)
+
+n  <- length(rough)
+xbar <- mean(rough)
+s <- sd(rough)
+
+# 1) Empirical Rule (Normal-ish): x̄ ± 2s
+range_empirical <- c(xbar - 2*s, xbar + 2*s)
+
+# 2) Nonparametric (no distribution assumption): central 95%
+range_quantile <- quantile(rough, probs = c(0.025, 0.975), type = 7)
+
+list(
+  n = n,
+  mean = round(xbar, 3),
+  sd = round(s, 3),
+  Empirical_95pct_xbar_pm_2s = round(range_empirical, 3),
+  Quantile_95pct = round(range_quantile, 3)
+)
+
+```
+Interpretation
+
+Both methods suggest that about 95% of pipe roughness values fall between ~1.0 and ~2.9 micrometers.
+
+The empirical rule assumes an approximately normal distribution.
+
+The quantile interval makes no distribution assumption and is narrower.
+
+# Task 13
+## Data
+
+```{r}
+# Number of ant species (all 11 sites)
+ants_species <- c(3, 3, 52, 7, 5, 49, 5, 4, 56, 22, 14)
+
+# Total plant cover (%)
+plant_cover <- c(40, 52, 40, 43, 27, 30, 16, 30, 56, 22, 14)
+
+# Split into regions
+dry_species <- ants_species[1:5]
+gobi_species <- ants_species[6:11]
+
+dry_cover <- plant_cover[1:5]
+gobi_cover <- plant_cover[6:11]
+```
+
+## (a) Mean, Median, Mode of Number of Ant Species
+
+```{r}
+mean_species <- mean(ants_species)
+median_species <- median(ants_species)
+mode_species <- as.numeric(names(which.max(table(ants_species))))
+
+list(Mean = mean_species, Median = median_species, Mode = mode_species)
+
+```
+
+## (b) Which measure of central tendency?
+
+Answer: Since the data include an extreme outlier (52 species at Site 3), the median is a better measure of central tendency than the mean.
+
+## (c) Dry Steppe Sites – Plant Cover %
+```{r}
+list(
+  Mean = mean(dry_cover),
+  Median = median(dry_cover),
+  Mode = as.numeric(names(which.max(table(dry_cover))))
+)
+
+```
+
+## (d) Gobi Desert Sites – Plant Cover %
+```{r}
+list(
+  Mean = mean(gobi_cover),
+  Median = median(gobi_cover),
+  Mode = as.numeric(names(which.max(table(gobi_cover))))
+)
+
+```
+## (e) Compare the Two Regions
+
+Answer: The Dry Steppe has higher plant cover (mean and median) compared to the Gobi Desert.
+This suggests the two regions have distinct vegetation patterns, which may influence the number of ant species observed.
+
+# Task 14
+
+Astronomers theorize that cold dark matter (CDM) caused the formation of galaxies.  
+One galaxy, A1775, is thought to be a *double cluster*. Data from 51 galaxy velocities  
+(in km/s) are given below.
+
+```{r}
+# Galaxy velocity data
+galaxy <- c(
+  22922, 20210, 21911, 19225, 18792, 21993, 23059,
+  20785, 22781, 23303, 22192, 19462, 19057, 23017,
+  20186, 23292, 19408, 24909, 19866, 22891, 23121,
+  19673, 23261, 22796, 22355, 19807, 23432, 22625,
+  22744, 22426, 19111, 18933, 22417, 19595, 23408,
+  22809, 19619, 22738, 18499, 19130, 23220, 22647,
+  22718, 22779, 19026, 22513, 19740, 22682, 19179,
+  19404, 22193
+)
+
+length(galaxy)
+
+```
+
+## (a) Graphical Method
+
+```{r}
+
+hist(galaxy, breaks=12, col="lightblue", main="Histogram of Galaxy Velocities (A1775)",
+     xlab="Velocity (km/s)")
+boxplot(galaxy, horizontal=TRUE, col="lightgreen", main="Boxplot of Galaxy Velocities")
+```
+
+## (b) Evidence for Double Cluster?
+
+From the histogram/boxplot, we expect to see two peaks (bimodal distribution),
+which supports the theory of two clusters (A1775A and A1775B).
+
+## (c) Numerical Descriptive Measures
+
+```{r}
+
+# Overall descriptives
+overall <- c(
+  n = length(galaxy),
+  mean = mean(galaxy),
+  sd = sd(galaxy),
+  median = median(galaxy),
+  min = min(galaxy),
+  max = max(galaxy)
+)
+overall
+
+# ---- Discover two clusters automatically (no arbitrary cut) ----
+set.seed(42)
+km <- kmeans(matrix(galaxy, ncol = 1), centers = 2, nstart = 50)
+
+# Order cluster labels by their means so: A = lower-mean, B = higher-mean
+cl_means <- tapply(galaxy, km$cluster, mean)
+ord <- order(cl_means)                # index of lower, higher
+# Relabel to A/B
+clusterAB <- ifelse(km$cluster == which(ord == 1), "A1775A", "A1775B")
+
+# Descriptives by cluster
+by_mean <- tapply(galaxy, clusterAB, mean)
+by_sd   <- tapply(galaxy, clusterAB, sd)
+by_n    <- tapply(galaxy, clusterAB, length)
+by_sum  <- rbind(n = by_n, mean = by_mean, sd = by_sd)
+round(by_sum, 2)
+
+
+```
+
+#Visual check
+
+```{r}
+
+hist(galaxy, breaks = 12, col = "lightgray",
+     main = "Galaxy Velocities (A1775) with Cluster Means",
+     xlab = "Velocity (km/s)")
+abline(v = by_mean["A1775A"], col = "blue",  lwd = 2, lty = 2)
+abline(v = by_mean["A1775B"], col = "red",   lwd = 2, lty = 2)
+legend("topleft",
+       legend = c(paste0("Mean A: ", round(by_mean["A1775A"],0)),
+                  paste0("Mean B: ", round(by_mean["A1775B"],0))),
+       col = c("blue","red"), lwd = 2, lty = 2, bty = "n")
+```
+
+## (d) Probability of 20,000 km/s Galaxy
+
+
+```{r}
+x0 <- 20000
+
+muA <- by_mean["A1775A"]; sdA <- by_sd["A1775A"]; nA <- by_n["A1775A"]
+muB <- by_mean["A1775B"]; sdB <- by_sd["A1775B"]; nB <- by_n["A1775B"]
+piA <- nA / (nA + nB);     piB <- nB / (nA + nB)
+
+# 1) Z-scores
+zA <- (x0 - muA)/sdA
+zB <- (x0 - muB)/sdB
+
+# 2) Posterior via normal densities with mixing proportions
+likA <- piA * dnorm(x0, mean = muA, sd = sdA)
+likB <- piB * dnorm(x0, mean = muB, sd = sdB)
+postA <- likA / (likA + likB)
+postB <- 1 - postA
+
+list(
+  z_in_A = round(zA, 2),
+  z_in_B = round(zB, 2),
+  posterior_P_A = round(postA, 3),
+  posterior_P_B = round(postB, 3)
+)
+
+best_cluster <- if (postA >= postB) "A1775A" else "A1775B"
+best_cluster
+
+
+```
+
+
+# Task 15
+```{r, message=FALSE, warning=FALSE}
+# Load required packages
+library(ggplot2)
+
+# Read the dataset (adjust the path if needed)
+ddt <- read.csv("DDT.csv", header = TRUE)
+
+# Preview the structure of the data
+head(ddt)
+
+# Create the boxplot
+ggplot(ddt, aes(x=RIVER, y=LENGTH, fill=SPECIES)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("CCATFISH" = "red",
+                               "LMBASS"   = "green",
+                               "SMBUFFALO"= "blue")) +
+  labs(title = "Fish Lengths by River and Species - Nishant Ahlawat",
+       x = "RIVER",
+       y = "LENGTH",
+       fill = "SPECIES") +
+  theme_minimal(base_size = 14)
+
+```
